@@ -108,18 +108,18 @@ static bool _gc_scan_(TornadoMemory* mem) {
         void* _data_addr = (void*)_get_data_addr((uintptr_t)__temp);
         void** var_ptr = _get_mem_obj_assoc_var_ptr(__temp);
         if ((uintptr_t)var_ptr >= (uintptr_t)_b_gc && (uintptr_t)var_ptr <= (uintptr_t)_t_gc){
-            bool _found = false;
             unsigned char **current = (unsigned char **)_t_gc;
             void *php = (void*)current ;
-            while (php && (php >= _b_gc)) {
+            _SCN_ST:
+            if (php && (php >= _b_gc)) {
                 if (php == var_ptr){
-                    _found = true;
                     if (*current != _data_addr){ __Dealloc_BLOCK(mem, __temp); }
-                    break; }
+                    goto _NEXT_OP;}
                 current--;
-                php = (void*)current; }
-            if (!_found) {__Dealloc_BLOCK(mem, __temp);}}
+                php = (void*)current; goto _SCN_ST; }
+            __Dealloc_BLOCK(mem, __temp);}
         else { __Dealloc_BLOCK(mem, __temp);}
+        _NEXT_OP:
         __temp = next;
     }
 }
