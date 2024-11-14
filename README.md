@@ -27,7 +27,7 @@ A few days ago, I started learning C. Prior to this, I was working on a compiler
 To address this issue, I decided to create a memory management system similar to malloc and free that minimizes memory fragmentation. This system can effectively handle large objects since the metadata for each object on a 64bit System is approximately 32 bytes. However, for embedded systems, this approach may not be efficient enough since most embedded systems have very limited memory, often under 1 MB, a metadata size of 32 bytes per object is inefficient, or it's not? You know better than me :) , so I plan to develop another project specifically tailored for those systems soon. For now, my solution can be used on general-purpose computers without any problems. 
 The algorithm uses on-demand defragmentation with a first-fit allocation strategy. This approach involves reorganizing memory to consolidate fragmented free space into larger contiguous blocks only when necessary. By doing so, it helps ensure that memory requests can be satisfied without excessive delay, improving overall system efficiency. For the first-fit allocation strategy, the system allocates the first available memory partition that meets the size requirements of a process. This method is straightforward and typically results in faster allocation times compared to other strategies, as it scans the memory from the beginning until it finds a suitable block.
  
-# Usage 
+## Usage 
 
 To start , include the tmalloc.h header file at the top of your program
 
@@ -35,7 +35,7 @@ To start , include the tmalloc.h header file at the top of your program
 #include "tmalloc.h"
 ```
 
-## **Garbage Collection**
+### **Garbage Collection**
 The garbage collector used in this system is almost precise, as you might know, C does not support a real precise garbage collection like languages such as Python or JavaScript due to the limitations in accessing memory segments. This garbage collector can only work with local variables; other memory segments are not supported yet. GC can achieve greater precision (being more precise) by increasing the GC level of the memory pool. While a higher GC level may result in longer processing times, levels 2 or 3 are generally sufficient for most applications. However, if your program allocates a significant amount of memory and you have neglected to deallocate a large number of objects, you may consider setting the GC level even higher to improve memory management.
 GC optimization is enabled by default in Tornado. If this option is active, it is not necessary to increase the GC level. 
 
