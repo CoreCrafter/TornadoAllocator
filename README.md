@@ -129,12 +129,12 @@ To compile the project, first navigate to the root directory and use the make co
 ```bash
 cd TornadoAllocator && make clean && make
 ```
-To run the executable, navigate to the bin directory and execute gc_test or main:
+To run the executables:
 
 ```bash
-cd bin && ./main
-# OR
-cd bin && ./gc_test
+./bin/main
+# and 
+./bin/gc_test
 ```
 
 ## Contributing
