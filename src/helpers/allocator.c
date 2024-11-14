@@ -62,8 +62,7 @@ static void _get_b_gc(){
 
 static void _get_b_gc_op(){
     int32_t __temp_gc = 0xd22255;
-    int32_t* p = &__temp_gc;
-    _b_gc = (void**)&p;
+    _b_gc = (void*)&__temp_gc;
 }
 
 void _get_t_gc(){
