@@ -77,7 +77,7 @@ tornado_set_gc_op(tm);
 tornado_unset_gc_op(tm);
 ```
 
-## Partial defragmentation
+### Partial defragmentation
 
 - If you wish to utilize partial defragmentation, you can control this feature using the tornado_set_op() and tornado_unset_op() functions. Use tornado_set_defrag_op() to enable partial defragmentation, and call tornado_unset_defrag_op() when you want to disable it. This allows for greater flexibility in managing memory and optimizing performance based on your application's needs. 
 
@@ -86,7 +86,7 @@ tornado_set_defrag_op(tm); // Enabling partial defragmentation for the memory po
 tornado_unset_defrag_op(tm); // Disabling partial defragmentation for the memory pool "tm"
 ```
 
-## Allocating memory
+### Allocating memory
 
 - To allocate memory for a variable, first declare (or define, since some declarations also consume memory) a variable of the desired type. For example: 
 
@@ -120,7 +120,7 @@ tornado_deallocate_all(tm);
 tornado_destroy(tm);
 ```
 
-# Compilation and Run
+## Compilation and Run
 
 I created a Makefile that can be customized for your own configurations. The default path for the output file is set to /bin, and your source code is located in src/main.c.
 
@@ -137,12 +137,12 @@ cd bin && ./main
 cd bin && ./gc_test
 ```
 
-# Contributing
+## Contributing
 Pull requests are welcome. For major changes, please open an issue first
 to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-# License
+## License
 
 ![MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
