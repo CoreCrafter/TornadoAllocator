@@ -37,7 +37,7 @@ To start , include the tmalloc.h header file at the top of your program
 
 ### **Garbage Collection**
 The garbage collector used in this system is almost precise, as you might know, C does not support a real precise garbage collection like languages such as Python or JavaScript due to the limitations in accessing memory segments. This garbage collector can only work with local variables; other memory segments are not supported yet. GC can achieve greater precision (being more precise) by increasing the GC level of the memory pool. While a higher GC level may result in longer processing times, levels 2 or 3 are generally sufficient for most applications. However, if your program allocates a significant amount of memory and you have neglected to deallocate a large number of objects, you may consider setting the GC level even higher to improve memory management.
-GC optimization is enabled by default in Tornado. If this option is active, it is not necessary to increase the GC level. 
+***GC optimization is enabled by default in Tornado. If this option is active, it is not necessary to increase the GC level***. 
 
 
 - To enable garbage collection for any memory pool, define "TORNADO_CONF_GC" at the top of your main function. This is crucial for proper initialization. 
