@@ -115,19 +115,12 @@ static bool _gc_scan_(TornadoMemory* mem) {
             while (php && (php >= _b_gc)) {
                 if (php == var_ptr){
                     _found = true;
-                    if (*current != _data_addr){
-                        __Dealloc_BLOCK(mem, __temp);
-                    }
-                    break;
-                }
+                    if (*current != _data_addr){ __Dealloc_BLOCK(mem, __temp); }
+                    break; }
                 current--;
-                php = (void*)current;
-            }
-            if (!_found) {__Dealloc_BLOCK(mem, __temp);}
-        }
-        else {
-            __Dealloc_BLOCK(mem, __temp);
-        }
+                php = (void*)current; }
+            if (!_found) {__Dealloc_BLOCK(mem, __temp);}}
+        else { __Dealloc_BLOCK(mem, __temp);}
         __temp = next;
     }
 }
@@ -198,8 +191,7 @@ static void _init_gc(TornadoMemory* mem){
     if ((uintptr_t)_b_gc > (uintptr_t)_t_gc){
         void* t = _b_gc;
         _b_gc = _t_gc;
-        _t_gc = t;
-    }
+        _t_gc = t;}
     unsigned short _c_ = _get_mem_gc_op(mem) ? 1 : _get_mem_gc_level(mem);
     while (_c_){_gc_scan_(mem); _c_--;}
 }
