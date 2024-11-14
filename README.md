@@ -13,7 +13,7 @@
 ![](https://img.shields.io/badge/memory-allocator-blue)
 ![](https://img.shields.io/badge/memory-defragmentation-8A2BE2)
 
-An efficient memory allocator designed for large objects, offering O(1) amortized allocation and O(1) deallocation, on-demand defragmentation with a first-fit allocation strategy and a conservative GC.
+An efficient memory allocator designed for large objects, offering O(1) amortized allocation and O(1) deallocation, on-demand defragmentation with a first-fit allocation strategy and a GC.
 
 	
 ### TODO
@@ -79,7 +79,7 @@ tornado_unset_gc_op(tm);
 
 ### Partial defragmentation
 
-- If you wish to utilize partial defragmentation, you can control this feature using the tornado_set_op() and tornado_unset_op() functions. Use tornado_set_defrag_op() to enable partial defragmentation, and call tornado_unset_defrag_op() when you want to disable it. This allows for greater flexibility in managing memory and optimizing performance based on your application's needs. 
+- If you wish to utilize partial defragmentation, you can control this feature using the tornado_set_defrag_op() and tornado_unset_defrag_op() functions. Use tornado_set_defrag_op() to enable partial defragmentation, and call tornado_unset_defrag_op() when you want to disable it. This allows for greater flexibility in managing memory and optimizing performance based on your application's needs. 
 
 ```C
 tornado_set_defrag_op(tm); // Enabling partial defragmentation for the memory pool "tm"
