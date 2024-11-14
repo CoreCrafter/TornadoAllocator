@@ -45,12 +45,9 @@ int main(int argc, const char* argv[]){
     TORNADO_CONF_GC; // Configure the parameters for GC
     TornadoMemory* tm = tornado_initial_heap_memory(208); // Allocating 208 bytes for memory
     tornado_set_gc(tm); // Enabling GC for tm
-    // by default Defragmentation optimization is enabled 
-
-    tornado_set_defrag_op(tm); // Enabling Defragmentation optimization
-
     // by default GC optimization is enabled you can use "tornado_unset_gc_op(tm);" to disable it 
-
+    
+    // by default partial defragmentation is enabled you can use "tornado_set_defrag_op(tm);" to disable it 
 
     allocate_some_memories(tm); 
     allocate_some_memories_again(tm);
