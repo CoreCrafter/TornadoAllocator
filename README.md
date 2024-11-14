@@ -20,14 +20,14 @@ An efficient memory allocator designed for large objects, offering O(1) amortize
 - **Adding tcalloc & trealloc similar to calloc and realloc**
 
 
-## About project
+# About project
 
 This is my first project in C as a beginner. There are many concepts and materials that I still don’t fully understand, but I am doing my best. I am studying computer science for about 8 to 9 months, In the meanwhile i have realized that system programming is incredibly exciting, which motivated me to focus my efforts on it. For my first tool, I chose C because it is special; it provides a great deal of control over hardware.
 A few days ago, I started learning C. Prior to this, I was working on a compiler for my programming language in Lisp. I found that memory management in C is more challenging than I initially thought. After further study, I learned about a concept called "fragmentation." When using malloc and free repeatedly, fragmentation can occur, leading to inefficiencies.
 To address this issue, I decided to create a memory management system similar to malloc and free that minimizes memory fragmentation. This system can effectively handle large objects since the metadata for each object on a 64bit System is approximately 32 bytes. However, for embedded systems, this approach may not be efficient enough since most embedded systems have very limited memory, often under 1 MB, a metadata size of 32 bytes per object is inefficient, or it's not? You know better than me :) , so I plan to develop another project specifically tailored for those systems soon. For now, my solution can be used on general-purpose computers without any problems. 
 The algorithm uses on-demand defragmentation with a first-fit allocation strategy. This approach involves reorganizing memory to consolidate fragmented free space into larger contiguous blocks only when necessary. By doing so, it helps ensure that memory requests can be satisfied without excessive delay, improving overall system efficiency. For the first-fit allocation strategy, the system allocates the first available memory partition that meets the size requirements of a process. This method is straightforward and typically results in faster allocation times compared to other strategies, as it scans the memory from the beginning until it finds a suitable block.
  
-## Usage 
+# Usage 
 
 To start , include the tmalloc.h header file at the top of your program
 
@@ -35,7 +35,7 @@ To start , include the tmalloc.h header file at the top of your program
 #include "tmalloc.h"
 ```
 
-# **Garbage Collection**
+## **Garbage Collection**
 The garbage collector used in this system is almost precise, as you might know, C does not support a real precise garbage collection like languages such as Python or JavaScript due to the limitations in accessing memory segments. This garbage collector can only work with local variables; other memory segments are not supported yet. GC can achieve greater precision (being more precise) by increasing the GC level of the memory pool. While a higher GC level may result in longer processing times, levels 2 or 3 are generally sufficient for most applications. However, if your program allocates a significant amount of memory and you have neglected to deallocate a large number of objects, you may consider setting the GC level even higher to improve memory management.
 GC optimization is enabled by default in Tornado. If this option is active, it is not necessary to increase the GC level. 
 
@@ -77,7 +77,7 @@ tornado_set_gc_op(tm);
 tornado_unset_gc_op(tm);
 ```
 
-# Partial defragmentation
+## Partial defragmentation
 
 - If you wish to utilize partial defragmentation, you can control this feature using the tornado_set_op() and tornado_unset_op() functions. Use tornado_set_defrag_op() to enable partial defragmentation, and call tornado_unset_defrag_op() when you want to disable it. This allows for greater flexibility in managing memory and optimizing performance based on your application's needs. 
 
@@ -86,7 +86,7 @@ tornado_set_defrag_op(tm); // Enabling partial defragmentation for the memory po
 tornado_unset_defrag_op(tm); // Disabling partial defragmentation for the memory pool "tm"
 ```
 
-# Allocating memory
+## Allocating memory
 
 - To allocate memory for a variable, first declare (or define, since some declarations also consume memory) a variable of the desired type. For example: 
 
@@ -120,7 +120,7 @@ tornado_deallocate_all(tm);
 tornado_destroy(tm);
 ```
 
-## Compilation and Run
+# Compilation and Run
 
 I created a Makefile that can be customized for your own configurations. The default path for the output file is set to /bin, and your source code is located in src/main.c.
 
@@ -137,12 +137,12 @@ cd bin && ./main
 cd bin && ./gc_test
 ```
 
-## Contributing
+# Contributing
 Pull requests are welcome. For major changes, please open an issue first
 to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-## License
+# License
 
 ![MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
