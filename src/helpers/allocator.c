@@ -103,7 +103,8 @@ static MemObject* _fill_block(TornadoMemory* mem, void** var_ptr, size_t object_
 static bool _gc_scan_(TornadoMemory* mem) {
     MemObject* __temp = _get_first_live_obj_ptr(mem);
     MemObject* next;
-    while(__temp){
+    _L_OBJS:
+    if (__temp){
         next = _get_mem_obj_next(__temp);
         void* _data_addr = (void*)_get_data_addr((uintptr_t)__temp);
         void** var_ptr = _get_mem_obj_assoc_var_ptr(__temp);
@@ -121,6 +122,7 @@ static bool _gc_scan_(TornadoMemory* mem) {
         else { __Dealloc_BLOCK(mem, __temp);}
         _NEXT_OP:
         __temp = next;
+        goto _L_OBJS;
     }
 }
 
