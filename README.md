@@ -124,9 +124,9 @@ tornado_destroy(tm);
 
 ## Compilation and Run
 
-I created a Makefile that can be customized for your own configurations. The default path for the output file is set to /bin, and your main source code is located in src/main.c and the source code to test GC is located in src/gc_test.c .
+I created a Makefile that can be customized for your own configurations. The default path for the output file is set to /bin, and your source code to test defragmentation is located in src/defrag_test.c and the source code to test GC is located in src/gc_test.c .
 
-To compile the project, first navigate to the root directory and use the make command. :
+To compile the project, first navigate to the root directory and use the make command :
 
 ```bash
 cd TornadoAllocator && make clean && make
@@ -134,7 +134,7 @@ cd TornadoAllocator && make clean && make
 To run the executables:
 
 ```bash
-./bin/main
+./bin/defrag_test
 # and 
 ./bin/gc_test
 ```
