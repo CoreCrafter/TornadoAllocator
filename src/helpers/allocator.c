@@ -100,7 +100,7 @@ static MemObject* _fill_block(TornadoMemory* mem, void** var_ptr, size_t object_
 }
 
 
-static bool _gc_scan_(TornadoMemory* mem) {
+static void _gc_scan_(TornadoMemory* mem) {
     MemObject* __temp = _get_first_live_obj_ptr(mem);
     MemObject* next;
     _L_OBJS:
