@@ -15,6 +15,8 @@
 
 An efficient memory allocator designed for large objects, offering O(1) amortized allocation and O(1) deallocation, on-demand defragmentation with a first-fit allocation strategy and a GC.
 
+### Updates
+- **Refactored** : Code structure is refactored.
 	
 ### TODO
 - **Adding tcalloc & trealloc similar to calloc and realloc**
@@ -67,7 +69,7 @@ tornado_unset_gc(tm);
 - If GC optimization is disabled, To enhance garbage collection (GC) and reduce memory leaks, use "tornado_set_gc_level()" function below. The GC level must be set to at least 1. if GC optimization is enabled, this function will not throw an error if called, but it is important to note that the optimization currently operates most efficiently and accurately at level 1. Changing the GC level will not impact the process and process always works at level 1.
 
 ```C
-tornado_set_gc_level(tm ,2); // Level 2 or 3 is great
+tornado_set_gc_level(tm ,2); // Level 2 or 3 is great 
 ```
 
 - To enable/disable GC optimization use these : 

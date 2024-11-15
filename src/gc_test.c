@@ -2,19 +2,7 @@
 #include "tmalloc.h"
 
 void allocate_some_memories_again(TornadoMemory* tm){
-    char* c;
-    char* d;
-    tornado_allocate_memory(tm, (void**)&c, sizeof(char) * 20);
-    c[0] = 'c';
-    c[1] = 'o';
-    c[2] = '\0';
-
-    tornado_allocate_memory(tm, (void**)&d, sizeof(char) * 20);
-    d[0] = 'd';
-    d[1] = 'o';
-    d[2] = '\0';
-    printf("address : %p\nstring3: %s\n",(void*)c, c);
-    printf("address : %p\nstring4: %s\n\n",(void*)d, d);
+    
 }
 
 void allocate_some_memories(TornadoMemory* tm){
@@ -30,11 +18,25 @@ void allocate_some_memories(TornadoMemory* tm){
     b[0] = 'b';
     b[1] = 'o';
     b[2] = '\0';
+    char* c;
+    char* d;
+    tornado_allocate_memory(tm, (void**)&c, sizeof(char) * 20);
+    c[0] = 'c';
+    c[1] = 'o';
+    c[2] = '\0';
+
+    tornado_allocate_memory(tm, (void**)&d, sizeof(char) * 20);
+    d[0] = 'd';
+    d[1] = 'o';
+    d[2] = '\0';
+    
     
     
     printf("allocated 4 objects :\n");
     printf("address : %p\nstring1: %s\n",(void*)a, a);
     printf("address : %p\nstring2: %s\n",(void*)b, b);
+    printf("address : %p\nstring3: %s\n",(void*)c, c);
+    printf("address : %p\nstring4: %s\n\n",(void*)d, d);
     
     
 }
@@ -48,7 +50,8 @@ int main(int argc, const char* argv[]){
     // by default GC optimization is enabled you can use "tornado_unset_gc_op(tm);" to disable it 
     
     // by default partial defragmentation is enabled you can use "tornado_set_defrag_op(tm);" to disable it 
-
+    tornado_unset_gc_op(tm);
+    tornado_set_gc_level(tm, 1);
     allocate_some_memories(tm); 
     allocate_some_memories_again(tm);
 

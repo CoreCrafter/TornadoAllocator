@@ -9,7 +9,6 @@
 
 extern uintptr_t tornado_nullptr_addr;
 TornadoMemory* __Initial_memory(size_t total_size);
-static MemObject* _fill_block(TornadoMemory* mem, void** var_ptr, size_t object_size, uintptr_t block_addr);
 inline void set_gc_level_memory(TornadoMemory* mem, unsigned short _level){_set_mem_gc_level(mem, _level);}
 inline void set_gc(TornadoMemory* mem){_set_mem_gc(mem, true);}
 inline void unset_gc(TornadoMemory* mem){_set_mem_gc(mem,false);}
@@ -21,7 +20,6 @@ void __Dealloc_obj(TornadoMemory* mem, void** var_ptr);
 void __alloc_mem(TornadoMemory* mem, void** var_ptr, size_t size);
 void __Dealloc_ALL(TornadoMemory* mem);
 void __Destroy_ALL(TornadoMemory* mem);
-void __Dealloc_BLOCK(TornadoMemory* mem, MemObject* mem_obj);
 void _get_t_gc();
 
 #endif

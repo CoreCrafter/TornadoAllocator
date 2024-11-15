@@ -27,24 +27,10 @@ static inline MemObject* _get_meta(uintptr_t _data_addr){
     return (MemObject*)(_data_addr - _mem_obj_meta_size);
 }
 
-static void _append_to_list(TornadoMemory* mem, MemObject* _obj){
-    MemObject* first_live_obj_ptr = _get_first_live_obj_ptr(mem);
-    MemObject* last_live_obj_ptr = _get_last_live_obj_ptr(mem);
-    if (first_live_obj_ptr == NULL){
-        _set_first_live_obj_ptr(mem, _obj);
-    }
-    if (last_live_obj_ptr){
-        _set_mem_obj_next(last_live_obj_ptr, _obj); 
-    }
-    _set_mem_obj_prev(_obj, last_live_obj_ptr);  
-    _set_last_live_obj_ptr(mem,_obj);
+static inline bool _is_available(TornadoMemory* mem, size_t size){
+    return _get_next_block_addr(_get_next_addr(mem), size) <= (uintptr_t)(_get_mem_pool(mem) \
+        + _get_mem_size(mem));
 }
-static void allocate_at_end(TornadoMemory* mem, void** var_ptr, size_t object_size){
-    MemObject* _obj = _fill_block(mem, var_ptr, object_size, _get_next_addr(mem));
-    _append_to_list(mem, _obj);
-    _set_next_addr(mem, _get_next_block_addr(_get_next_addr(mem), object_size));
-}
-
 
 static void _get_b_gc(){
     #if defined(_WIN64) || defined(_WIN32) || defined(_WIN16)
@@ -58,11 +44,6 @@ static void _get_b_gc(){
         getrlimit(RLIMIT_STACK, &sl);
         _b_gc = (void*)((char*)&sl - sl.rlim_cur);
     #endif
-}
-
-static void _get_b_gc_op(){
-    int32_t __temp_gc = 0xd22255;
-    _b_gc = (void*)&__temp_gc;
 }
 
 void _get_t_gc(){
@@ -87,6 +68,117 @@ void _get_t_gc(){
     #endif
 }
 
+static void _get_b_gc_op(){
+    int32_t __temp_gc = 0xd22255;
+    _b_gc = (void*)&__temp_gc;
+}
+
+
+static void _find_next_hole(TornadoMemory* mem){
+    MemObject* __temp = _get_live_temp(mem);
+    MemObject* ___temp_next = _get_mem_obj_next(__temp);
+    while (__temp && ___temp_next && \
+     (_get_next_block_addr((uintptr_t)__temp, _get_mem_obj_size(__temp)) == (uintptr_t)___temp_next)){
+        __temp = ___temp_next;
+        ___temp_next = _get_mem_obj_next(___temp_next);
+    }
+    if (__temp && ___temp_next){
+        _set_first_hole_addr(mem, _get_next_block_addr((uintptr_t)__temp, _get_mem_obj_size(__temp)));
+        _set_live_temp(mem, ___temp_next);
+        return;
+    }
+    _set_first_hole_addr(mem, tornado_nullptr_addr);
+    _set_live_temp(mem,NULL);
+}
+
+void __Destroy_ALL(TornadoMemory* mem) {
+    void* ___pool = (void*)_get_mem_pool(mem);
+    if (___pool){
+        gen_free(___pool);
+        _set_mem_pool(mem, tornado_nullptr_addr);
+        gen_free((void*)mem);
+    }      
+}
+
+static void __Dealloc_BLOCK(TornadoMemory* mem, MemObject* mem_obj){
+    size_t _obj_size = (size_t)_get_mem_obj_size(mem_obj);
+    _set_mem_obj_free_status(mem_obj, true);
+    _set_mem_obj_size(mem_obj, (uintptr_t)0);
+    _set_mem_obj_assoc_var_ptr(mem_obj, NULL);
+    _dec_used(mem, _obj_size);
+    _dec_meta_used(mem, _mem_obj_meta_size);
+    uintptr_t __f_hole_addr = _get_first_hole_addr(mem);
+    if (__f_hole_addr == tornado_nullptr_addr || (uintptr_t)mem_obj < __f_hole_addr){ 
+        _set_first_hole_addr(mem,(uintptr_t)mem_obj);
+        _set_live_temp(mem,_get_mem_obj_next(mem_obj));
+    } 
+    MemObject* ___live_temp = _get_live_temp(mem);
+    if (mem_obj == ___live_temp){ _set_live_temp(mem,_get_mem_obj_next(___live_temp)); }
+    MemObject* last_live_obj_ptr = _get_last_live_obj_ptr(mem);
+    MemObject* first_live_obj_ptr = _get_first_live_obj_ptr(mem);
+    if (first_live_obj_ptr == last_live_obj_ptr){ reset_configs(mem);}
+    else if (mem_obj == first_live_obj_ptr){ 
+        _set_first_live_obj_ptr(mem, _get_mem_obj_next(first_live_obj_ptr));
+        _set_mem_obj_prev(_get_first_live_obj_ptr(mem), NULL);
+        _set_mem_obj_next(mem_obj, NULL);
+    }
+    else if(mem_obj == last_live_obj_ptr){
+        _set_last_live_obj_ptr(mem,_get_mem_obj_prev(last_live_obj_ptr));
+        _set_mem_obj_next(_get_last_live_obj_ptr(mem), NULL);
+        _set_mem_obj_prev(mem_obj, NULL);
+        _set_next_addr(mem, (uintptr_t)last_live_obj_ptr);
+        __f_hole_addr = _get_first_hole_addr(mem);
+        if ((uintptr_t)_get_last_live_obj_ptr(mem) < __f_hole_addr){
+            _set_live_temp(mem, NULL) ;
+            _set_first_hole_addr(mem, tornado_nullptr_addr);
+            _set_next_addr(mem, __f_hole_addr);
+        }
+    }
+    else {
+        MemObject* __prev = _get_mem_obj_prev(mem_obj);
+        MemObject* __next = _get_mem_obj_next(mem_obj);
+        _set_mem_obj_next(__prev, __next);
+        _set_mem_obj_prev(__next, __prev);
+    }
+}
+
+
+void __Dealloc_ALL(TornadoMemory* mem){
+    MemObject* __temp = _get_first_live_obj_ptr(mem);
+    MemObject* next;
+    while(__temp){
+        next = _get_mem_obj_next(__temp);
+        __Dealloc_BLOCK(mem, __temp);
+        __temp = next;
+    }
+    reset_configs(mem);
+}
+
+void __Dealloc_obj(TornadoMemory* mem, void** var_ptr){
+    if (var_ptr == NULL || *var_ptr == NULL ){
+        __Destroy_ALL(mem);
+        throwErr(NULL_VAR);
+    }
+    MemObject* obj = _get_meta((uintptr_t)*var_ptr);;
+    if (_get_mem_obj_free_status(obj) == true){
+        __Destroy_ALL(mem);
+        throwErr_dealloc(obj, DEALLOC_FAILURE_ERR_FREED);
+    }
+    __Dealloc_BLOCK(mem, obj);
+}
+
+static void _append_to_list(TornadoMemory* mem, MemObject* _obj){
+    MemObject* first_live_obj_ptr = _get_first_live_obj_ptr(mem);
+    MemObject* last_live_obj_ptr = _get_last_live_obj_ptr(mem);
+    if (first_live_obj_ptr == NULL){
+        _set_first_live_obj_ptr(mem, _obj);
+    }
+    if (last_live_obj_ptr){
+        _set_mem_obj_next(last_live_obj_ptr, _obj); 
+    }
+    _set_mem_obj_prev(_obj, last_live_obj_ptr);  
+    _set_last_live_obj_ptr(mem,_obj);
+}
 
 static MemObject* _fill_block(TornadoMemory* mem, void** var_ptr, size_t object_size, uintptr_t block_addr) {
     MemObject* _new_obj = (MemObject*)block_addr;
@@ -97,6 +189,19 @@ static MemObject* _fill_block(TornadoMemory* mem, void** var_ptr, size_t object_
     *var_ptr = (void*)_get_data_addr(block_addr);
     _inc_used(mem, object_size);
     return _new_obj;
+}
+
+static void allocate_at_end(TornadoMemory* mem, void** var_ptr, size_t object_size){
+    MemObject* _obj = _fill_block(mem, var_ptr, object_size, _get_next_addr(mem));
+    _append_to_list(mem, _obj);
+    _set_next_addr(mem, _get_next_block_addr(_get_next_addr(mem), object_size));
+}
+
+
+TornadoMemory* __Initial_memory(size_t total_size) {
+    TornadoMemory* memory_obj = create_memory_pool(total_size);
+    _mem_obj_meta_size = _get_mem_obj_meta_size();
+    return memory_obj;
 }
 
 
@@ -126,21 +231,15 @@ static void _gc_scan_(TornadoMemory* mem) {
     }
 }
 
-static void _find_next_hole(TornadoMemory* mem){
-    MemObject* __temp = _get_live_temp(mem);
-    MemObject* ___temp_next = _get_mem_obj_next(__temp);
-    while (__temp && ___temp_next && \
-     (_get_next_block_addr((uintptr_t)__temp, _get_mem_obj_size(__temp)) == (uintptr_t)___temp_next)){
-        __temp = ___temp_next;
-        ___temp_next = _get_mem_obj_next(___temp_next);
-    }
-    if (__temp && ___temp_next){
-        _set_first_hole_addr(mem, _get_next_block_addr((uintptr_t)__temp, _get_mem_obj_size(__temp)));
-        _set_live_temp(mem, ___temp_next);
-        return;
-    }
-    _set_first_hole_addr(mem, tornado_nullptr_addr);
-    _set_live_temp(mem,NULL);
+static void _init_gc(TornadoMemory* mem){
+    _get_b_gc_ptr = _get_mem_gc_op(mem) ? _get_b_gc_op : _get_b_gc;
+    _get_b_gc_ptr();
+    if ((uintptr_t)_b_gc > (uintptr_t)_t_gc){
+        void* t = _b_gc;
+        _b_gc = _t_gc;
+        _t_gc = t;}
+    unsigned short _c_ = _get_mem_gc_op(mem) ? 1 : _get_mem_gc_level(mem);
+    while (_c_){_gc_scan_(mem); _c_--;}
 }
 
 static bool start_def(TornadoMemory* mem, void** var_ptr_temp, size_t size){
@@ -186,31 +285,6 @@ static bool start_def(TornadoMemory* mem, void** var_ptr_temp, size_t size){
     return false;
 }
 
-static void _init_gc(TornadoMemory* mem){
-    _get_b_gc_ptr = _get_mem_gc_op(mem) ? _get_b_gc_op : _get_b_gc;
-    _get_b_gc_ptr();
-    if ((uintptr_t)_b_gc > (uintptr_t)_t_gc){
-        void* t = _b_gc;
-        _b_gc = _t_gc;
-        _t_gc = t;}
-    unsigned short _c_ = _get_mem_gc_op(mem) ? 1 : _get_mem_gc_level(mem);
-    while (_c_){_gc_scan_(mem); _c_--;}
-}
-
-void __Destroy_ALL(TornadoMemory* mem) {
-    void* ___pool = (void*)_get_mem_pool(mem);
-    if (___pool){
-        gen_free(___pool);
-        _set_mem_pool(mem, tornado_nullptr_addr);
-        gen_free((void*)mem);
-    }      
-}
-
-static inline bool _is_available(TornadoMemory* mem, size_t size){
-    return _get_next_block_addr(_get_next_addr(mem), size) <= (uintptr_t)(_get_mem_pool(mem) \
-        + _get_mem_size(mem));
-}
-
 
 void __alloc_mem(TornadoMemory* mem, void** var_ptr, size_t size){
     if (_is_available(mem, size)){ allocate_at_end(mem, var_ptr, size); }
@@ -223,75 +297,10 @@ void __alloc_mem(TornadoMemory* mem, void** var_ptr, size_t size){
     }
 }
 
-TornadoMemory* __Initial_memory(size_t total_size) {
-    TornadoMemory* memory_obj = create_memory_pool(total_size);
-    _mem_obj_meta_size = _get_mem_obj_meta_size();
-    return memory_obj;
-}
 
-void __Dealloc_ALL(TornadoMemory* mem){
-    MemObject* __temp = _get_first_live_obj_ptr(mem);
-    MemObject* next;
-    while(__temp){
-        next = _get_mem_obj_next(__temp);
-        __Dealloc_BLOCK(mem, __temp);
-        __temp = next;
-    }
-    reset_configs(mem);
-}
 
-void __Dealloc_BLOCK(TornadoMemory* mem, MemObject* mem_obj){
-    size_t _obj_size = (size_t)_get_mem_obj_size(mem_obj);
-    _set_mem_obj_free_status(mem_obj, true);
-    _set_mem_obj_size(mem_obj, (uintptr_t)0);
-    _set_mem_obj_assoc_var_ptr(mem_obj, NULL);
-    _dec_used(mem, _obj_size);
-    _dec_meta_used(mem, _mem_obj_meta_size);
-    uintptr_t __f_hole_addr = _get_first_hole_addr(mem);
-    if (__f_hole_addr == tornado_nullptr_addr || (uintptr_t)mem_obj < __f_hole_addr){ 
-        _set_first_hole_addr(mem,(uintptr_t)mem_obj);
-        _set_live_temp(mem,_get_mem_obj_next(mem_obj));
-    } 
-    MemObject* ___live_temp = _get_live_temp(mem);
-    if (mem_obj == ___live_temp){ _set_live_temp(mem,_get_mem_obj_next(___live_temp)); }
-    MemObject* last_live_obj_ptr = _get_last_live_obj_ptr(mem);
-    MemObject* first_live_obj_ptr = _get_first_live_obj_ptr(mem);
-    if (first_live_obj_ptr == last_live_obj_ptr){ reset_configs(mem);}
-    else if (mem_obj == first_live_obj_ptr){ 
-        _set_first_live_obj_ptr(mem, _get_mem_obj_next(first_live_obj_ptr));
-        _set_mem_obj_prev(_get_first_live_obj_ptr(mem), NULL);
-        _set_mem_obj_next(mem_obj, NULL);
-    }
-    else if(mem_obj == last_live_obj_ptr){
-        _set_last_live_obj_ptr(mem,_get_mem_obj_prev(last_live_obj_ptr));
-        _set_mem_obj_next(_get_last_live_obj_ptr(mem), NULL);
-        _set_mem_obj_prev(mem_obj, NULL);
-        _set_next_addr(mem, (uintptr_t)last_live_obj_ptr);
-        __f_hole_addr = _get_first_hole_addr(mem);
-        if ((uintptr_t)_get_last_live_obj_ptr(mem) < __f_hole_addr){
-            _set_live_temp(mem, NULL) ;
-            _set_first_hole_addr(mem, tornado_nullptr_addr);
-            _set_next_addr(mem, __f_hole_addr);
-        }
-    }
-    else {
-        MemObject* __prev = _get_mem_obj_prev(mem_obj);
-        MemObject* __next = _get_mem_obj_next(mem_obj);
-        _set_mem_obj_next(__prev, __next);
-        _set_mem_obj_prev(__next, __prev);
-    }
-}
 
-void __Dealloc_obj(TornadoMemory* mem, void** var_ptr){
-    if (var_ptr == NULL || *var_ptr == NULL ){
-        __Destroy_ALL(mem);
-        throwErr(NULL_VAR);
-    }
-    MemObject* obj = _get_meta((uintptr_t)*var_ptr);;
-    if (_get_mem_obj_free_status(obj) == true){
-        __Destroy_ALL(mem);
-        throwErr_dealloc(obj, DEALLOC_FAILURE_ERR_FREED);
-    }
-    __Dealloc_BLOCK(mem, obj);
-}
+
+
+
 
