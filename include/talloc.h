@@ -5,9 +5,6 @@
 #include "utils/common_libs.h"
 #include "utils/errors/handle_err.h"
 #include "helpers/meta/memory_met.h"
-#if !defined(__linux__) || !defined(__gnu_linux__)
-	throwErr(UNKNOWN_ARCH); 
-#endif
 extern bool _conf_set;
 #define TORNADO_CONF \
 do {if (_conf_set){throwErr(ERR__DUP);}__init_internal_mem_arr();_get_b_SEG();_get_t_GRBR();_conf_set = true;} while (0);

@@ -39,7 +39,7 @@ To start , include the talloc.h header file at the top of your program
 ```
 
 ### **Considerations**
-- ***Windows is not supported.***
+- ***Only GCC-based toolchains supported, including MinGW and GCC and other compatible variants.***
 - ***it is important to note that you must not allocate any memory within the main function.***
 - ***Do not use any other allocators with this one, as the mechanisms are designed to function solely with this specific allocator.***
 

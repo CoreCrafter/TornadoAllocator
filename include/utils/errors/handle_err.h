@@ -13,6 +13,7 @@
 #define NULL_VAR "is NULL"
 #define ERR_SCN_ "Internal Error | handling segmentations has failed"
 #define FTL_ERR "Fatal Error"
+#define UNKNOWN_ARCH "Unknown Platform"
 #define FTL_ERR_DEL "Fatal Error | Internal pool deletion failed"
 #define IND_MEM_ARR_OB "Fatal Error | Tornado memory structure indexing error"
 #define DEALLOC_OUT_OF_RANGE "deallocation failed | doesn't belong to the specified memory pool"

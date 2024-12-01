@@ -1,18 +1,30 @@
 
 
-# you just need to define these two 
+
 ### 1
-TARGET_COMPILER = gcc # your compiler
-### 2
-# supported platforms ( TARGET_ARCH ): linux64 linux32 aarch64-linux arm-linux
-TARGET_ARCH = linux64
+# supported platforms ( TARGET_ARCH ): linux64 linux32 aarch64-linux arm-linux win32 win64
+TARGET_ARCH = win32
+
+
+ifeq ($(TARGET_ARCH), win32)
+	TARGET_COMPILER = i686-w64-mingw32-gcc
+	CFLAGS = -m32 -Iinclude
+else ifeq ($(TARGET_ARCH), win64)
+	TARGET_COMPILER = x86_64-w64-mingw32-gcc
+	CFLAGS = -m64 -Iinclude
+else
+	TARGET_COMPILER = gcc
+	CFLAGS = -Iinclude
+endif
+
+	
 
 
 
 TARGET_LIB_PATH = -Lplatforms/$(TARGET_ARCH)
 TARGET_LIB = -ltornado-$(TARGET_ARCH)
 CC = $(TARGET_COMPILER)
-CFLAGS = -Iinclude
+
 LDFLAGS =  $(TARGET_LIB_PATH) $(TARGET_LIB)
 
 SRC_DIR = src
