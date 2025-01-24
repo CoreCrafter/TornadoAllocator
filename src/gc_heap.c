@@ -21,17 +21,25 @@ void allocate_in_(){
     r[0] = 'm';
     r[1] = 'o';
     r[2] = '\0';
-    printf("allocated %p\n", (void*)r);
+    printf("allocated in tm  %p\n", (void*)r);
     Item* d;
     tornado_allocate(tm2, d, sizeof(Item));
+   	printf("allocated in tm2 %p\n", (void*)d);
 
     d->a = 4;
     d->data = r;
+    
+    Item* d2;
+    tornado_allocate(tm2, d2, sizeof(Item));
+   	printf("allocated in tm2 %p\n", (void*)d2);
 
-    // d is not reachable neither r
+    d2->a = 4;
+    d2->data = d;
+
    
 
 }
+
 
 void run_program(){
 	tm = tornado_initial_heap_memory(27); // 3 bytes + 24 bytes metadata
@@ -41,7 +49,7 @@ void run_program(){
 
     char* r;
     tornado_allocate(tm, r, sizeof(char) * 3);
-    printf("allocated %p\n", (void*)r);
+    printf("allocated in run program %p\n", (void*)r);
 
 
 	tornado_destroy_all();

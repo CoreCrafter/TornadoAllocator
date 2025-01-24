@@ -10,6 +10,8 @@
 
 #define TORNADO_MEM_F_LIVE_MEMBER(mem) mem->first_live_obj_ptr
 
+
+
 typedef struct {
     uintptr_t __pool;
     uintptr_t __first_hole_addr;
@@ -27,6 +29,8 @@ typedef struct {
 
 void reset_configs(TornadoMemory* mem);
 TornadoMemory* create_memory_pool(size_t total_size);
+
+void _add_to_gc_dict(TornadoMemory* mem, MemObject* _addr);
 void _set_mem_init(TornadoMemory* mem, bool boolean);
 void _set_first_hole_addr(TornadoMemory* mem, uintptr_t addr);
 void _set_next_addr(TornadoMemory* mem, uintptr_t addr);

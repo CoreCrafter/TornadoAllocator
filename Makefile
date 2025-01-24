@@ -3,7 +3,7 @@
 
 ### 1
 # supported platforms ( TARGET_ARCH ): linux64 linux32 aarch64-linux arm-linux win32 win64
-TARGET_ARCH = win32
+TARGET_ARCH = linux64
 TARGET_COMPILER = gcc
 
 
